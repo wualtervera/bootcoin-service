@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 public class BootcoinConsumer {
 
     @Autowired
-    private BootcoinCrudService walletCrudService;
+    private BootcoinCrudService bootcoinCrudService;
 
     @Autowired
     private BootcoinProducer bootcoinProducer;
@@ -34,15 +34,15 @@ public class BootcoinConsumer {
     }
 
     public void validData(BootcoinTransactionDto bootcoinTransactionDto) {
-        walletCrudService.findByNumberPhone(bootcoinTransactionDto.getOriginNumberPhone())
+        bootcoinCrudService.findByNumberPhone(bootcoinTransactionDto.getOriginNumberPhone())
                 .flatMap(walletOrigin -> {
                     if (walletOrigin.getAmount() >= bootcoinTransactionDto.getAmount()) {
                         walletOrigin.setAmount((walletOrigin.getAmount() - bootcoinTransactionDto.getAmount()));
-                        walletCrudService.save(walletOrigin) //Update wallet origin
-                                .flatMap(walletUpdate -> walletCrudService.findByNumberPhone(bootcoinTransactionDto.getDestinyNumberPhone()))
+                        bootcoinCrudService.save(walletOrigin) //Update wallet origin
+                                .flatMap(walletUpdate -> bootcoinCrudService.findByNumberPhone(bootcoinTransactionDto.getDestinyNumberPhone()))
                                 .flatMap(walletDestiny -> {
                                     walletDestiny.setAmount(walletDestiny.getAmount() + bootcoinTransactionDto.getAmount());
-                                    return walletCrudService.save(walletDestiny); //Update wallet destiny
+                                    return bootcoinCrudService.save(walletDestiny); //Update wallet destiny
                                 }).subscribe(w -> log.info("Updated All"));
                         bootcoinTransactionDto.setState(BootcoinTransactionDto.State.SUCCESSFUL);
                     } else {

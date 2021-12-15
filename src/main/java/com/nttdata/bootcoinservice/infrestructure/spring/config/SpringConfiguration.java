@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class SpringConfiguration {
 
     @Bean
-    public BootcoinRepository walletRepository(){
+    public BootcoinRepository bootcoinRepository(){
         return new BootcoinCrudService();
     }
 }
