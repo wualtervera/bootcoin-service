@@ -33,25 +33,49 @@ public class BootcoinConsumer {
         System.out.println("Sent message!");
     }
 
+
     public void validData(BootcoinTransactionDto bootcoinTransactionDto) {
-        bootcoinCrudService.findByNumberPhone(bootcoinTransactionDto.getOriginNumberPhone())
-                .flatMap(walletOrigin -> {
-                    if (walletOrigin.getAmount() >= bootcoinTransactionDto.getAmount()) {
-                        walletOrigin.setAmount((walletOrigin.getAmount() - bootcoinTransactionDto.getAmount()));
-                        bootcoinCrudService.save(walletOrigin) //Update wallet origin
-                                .flatMap(walletUpdate -> bootcoinCrudService.findByNumberPhone(bootcoinTransactionDto.getDestinyNumberPhone()))
-                                .flatMap(walletDestiny -> {
-                                    walletDestiny.setAmount(walletDestiny.getAmount() + bootcoinTransactionDto.getAmount());
-                                    return bootcoinCrudService.save(walletDestiny); //Update wallet destiny
+        //BOOTCOIN-TRANSACION-SERVICE
+        //1- Enviar solicitud al vendedor(consumidor)
+
+        //BOOTCOIN-SERVICE
+        //1- Recibir solicitud del comprador(productor)
+        //2- Vendedor(consumidor) acepta la solicitud del comprador
+        //3- Enviar confirmación/rechazo de la venta al comprador(consumidor)
+
+        //BOOTCOIN-TRANSACION-SERVICE
+        //3- recibe la cofirmación para realizar/rechazar transaccion
+
+
+        //BUSCAR VENDEDOR POR ID
+        bootcoinCrudService.findByNumberPhone(bootcoinTransactionDto.getPhoneSeller())
+                .flatMap(boocoinSeller-> {
+                    //Venededor tiene bootcoins en su cuenta BOOTCOIN?
+                    if (boocoinSeller.getAmountBooCoins() >= bootcoinTransactionDto.getAmountCoins()) {
+
+                        //Restamos los bootcoins de su BOOTCOIN
+                        boocoinSeller.setAmountBooCoins((boocoinSeller.getAmountBooCoins() - bootcoinTransactionDto.getAmountCoins()));
+                        bootcoinCrudService.save(boocoinSeller) //Update botcoin del vendedor
+
+                                //BUSCAR COMPRADOR POR ID
+                                .flatMap(bootcoinUpdate -> bootcoinCrudService.findByNumberPhone(bootcoinTransactionDto.getPhoneBuyer()))
+                                .flatMap(boocoinBuyer -> {
+
+                                    //Sumamos los bootcoins de su cuenta BOOTCOIN
+                                    boocoinBuyer.setAmountBooCoins(boocoinBuyer.getAmountBooCoins() + bootcoinTransactionDto.getAmountCoins());
+                                    return bootcoinCrudService.save(boocoinBuyer); //Update bootcoin de comprador
+
                                 }).subscribe(w -> log.info("Updated All"));
-                        bootcoinTransactionDto.setState(BootcoinTransactionDto.State.SUCCESSFUL);
+
+                        bootcoinTransactionDto.setState(BootcoinTransactionDto.State.ACCEPTED);
                     } else {
                         //Transaccion rechazada
                         bootcoinTransactionDto.setState(BootcoinTransactionDto.State.REJECTED);
                     }
+                    //CONFIRMAR VENTA
                     this.bootcoinProducer.producer(bootcoinTransactionDto);
 
-                    return Mono.just(walletOrigin);
+                    return Mono.just(boocoinSeller);
                 }).subscribe();
     }
 

@@ -18,7 +18,7 @@ public class Bootcoin implements Serializable{
     private String numberDocument;
     private String numberPhone;
     private String email;
-    private Double amount;
+    private Double amountBooCoins;
     private LocalDateTime createAt;
 
     public enum TypeDocument {

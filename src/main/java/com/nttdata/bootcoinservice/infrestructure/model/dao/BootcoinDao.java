@@ -1,5 +1,6 @@
 package com.nttdata.bootcoinservice.infrestructure.model.dao;
 
+import com.nttdata.bootcoinservice.domain.Bootcoin;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,11 +26,12 @@ public class BootcoinDao {
     @NonNull
     private String email;
     @NonNull
-    private Double amount;
+    private Double amountBooCoins;
     @NonNull
     private LocalDateTime createAt;
 
     public enum TypeDocument {
         DNI, CEX, Pasaporte
     }
+
 }
